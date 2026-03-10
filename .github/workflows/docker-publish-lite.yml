@@ -26,6 +26,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Replace teams.live.com with teams.microsoft.com
+        run: |
+          find . -type f -not -path "*/\.git/*" -exec sed -i 's/teams.live.com/teams.microsoft.com/g' {} +
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
