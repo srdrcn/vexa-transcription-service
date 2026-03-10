@@ -21,6 +21,8 @@ COPY main.py .
 
 # Create models directory and pre-download the default model
 ARG MODEL_SIZE="large-v3-turbo"
+ENV HF_HUB_CACHE="/app/models"
+ENV HF_HOME="/app/models"
 RUN mkdir -p /app/models && \
     python3 -c "from faster_whisper import download_model; download_model('${MODEL_SIZE}', output_dir='/app/models/${MODEL_SIZE}')"
 
