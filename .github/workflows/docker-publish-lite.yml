@@ -32,9 +32,15 @@ jobs:
 
       - name: Inject Proxy to Browser Args
         run: |
-          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=https=http:\/\/10.81.105.12:8080",\n  "--proxy-bypass-list=localhost;127.0.0.1;10.0.0.0\/8;172.16.0.0\/12;192.168.0.0\/16",\n  "--enable-logging",\n  "--log-file=\/var\/log\/vexa-bots\/chromium-debug.log",\n  "--v=1",/' services/vexa-bot/core/src/constans.ts
+          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=https=http:\/\/10.81.105.12:8080",\n  "--proxy-bypass-list=localhost;127.0.0.1;10.0.0.0\/8;172.16.0.0\/12;192.168.0.0\/16",\n  "--use-fake-device-for-media-stream",\n  "--enable-logging",\n  "--log-file=\/var\/log\/vexa-bots\/chromium-debug.log",\n  "--v=1",/' services/vexa-bot/core/src/constans.ts
           echo "==== PRINTING constans.ts PROXY INJECTION RESULT ===="
-          head -n 20 services/vexa-bot/core/src/constans.ts
+          head -n 25 services/vexa-bot/core/src/constans.ts
+
+      - name: Inject screenshot before Join button click
+        run: |
+          sed -i 's/log("Step 6: Clicking .Join now. to enter the meeting...");/await page.screenshot({ path: "\/var\/log\/vexa-bots\/teams-prejoin.png", fullPage: true });\n  log("📸 Screenshot saved to \/var\/log\/vexa-bots\/teams-prejoin.png");\n  log("Step 6: Clicking .Join now. to enter the meeting...");/' services/vexa-bot/core/src/platforms/msteams/join.ts
+          echo "==== VERIFYING join.ts screenshot injection ===="
+          grep -n "screenshot" services/vexa-bot/core/src/platforms/msteams/join.ts || echo "WARNING: screenshot not found in join.ts"
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
