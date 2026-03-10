@@ -30,6 +30,10 @@ jobs:
         run: |
           find . -type f -not -path "*/\.git/*" -exec sed -i 's/teams.live.com/teams.microsoft.com/g' {} +
 
+      - name: Inject Proxy to Browser Args
+        run: |
+          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=http:\/\/10.81.105.12:8080",/' services/vexa-bot/core/src/constans.ts
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
