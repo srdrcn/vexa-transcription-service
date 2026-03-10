@@ -1,0 +1,45 @@
+name: Build and Push Vexa Lite
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'docker/lite/**'
+
+jobs:
+  build-and-push-lite:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Vexa core repository
+        uses: actions/checkout@v4
+        with:
+          repository: Vexa-ai/vexa  # We check out the exact Vexa core repository to get its code
+          ref: main
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: chosenwar/vexa-lite
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # build context is the vexa core repo
+          file: docker/lite/Dockerfile.lite # point to the lite Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
