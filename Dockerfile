@@ -19,8 +19,10 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Copy application
 COPY main.py .
 
-# Create models directory
-RUN mkdir -p /app/models
+# Create models directory and pre-download the default model
+ARG MODEL_SIZE="large-v3-turbo"
+RUN mkdir -p /app/models && \
+    python3 -c "from faster_whisper import download_model; download_model('${MODEL_SIZE}', output_dir='/app/models/${MODEL_SIZE}')"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
