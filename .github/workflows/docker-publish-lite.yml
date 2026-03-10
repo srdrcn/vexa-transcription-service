@@ -32,7 +32,7 @@ jobs:
 
       - name: Inject Proxy to Browser Args
         run: |
-          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=http:\/\/10.81.105.12:8080",/' services/vexa-bot/core/src/constans.ts
+          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=http=http:\/\/10.81.105.12:8080;https=http:\/\/10.81.105.12:8080",/' services/vexa-bot/core/src/constans.ts
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
