@@ -17,7 +17,7 @@ jobs:
       - name: Check out Vexa core repository
         uses: actions/checkout@v4
         with:
-          repository: Vexa-ai/vexa  # We check out the exact Vexa core repository to get its code
+          repository: Vexa-ai/vexa
           ref: main
 
       - name: Log in to Docker Hub
@@ -38,40 +38,37 @@ jobs:
 
       - name: Inject permission dialog handler and screenshot in join.ts
         run: |
-          cat > /tmp/join-patch.py << 'PYEOF'
-          import re
-
-          with open("services/vexa-bot/core/src/platforms/msteams/join.ts", "r") as f:
+          python3 -c "
+          with open('services/vexa-bot/core/src/platforms/msteams/join.ts', 'r') as f:
               content = f.read()
 
-          # Inject "Continue without audio or video" handler + screenshot before Step 6
-          old = 'log("Step 6: Clicking \'Join now\' to enter the meeting...");'
-          new = '''// Handle Teams "Continue without audio or video" permission dialog
-  try {
-    const continueNoAVBtn = page.locator('button:has-text("Continue without audio or video")').first();
-    const continueNoAVVisible = await continueNoAVBtn.isVisible().catch(() => false);
-    if (continueNoAVVisible) {
-      await continueNoAVBtn.click();
-      log("✅ Clicked Continue without audio or video button");
-      await page.waitForTimeout(2000);
-    }
-  } catch (e: any) {
-    log("ℹ️ No Continue without audio or video dialog: " + (e?.message || e));
-  }
+          old = 'log(\"Step 6: Clicking' + \" '\" + 'Join now' + \"' \" + 'to enter the meeting...\");'
 
-  await page.screenshot({ path: "/var/log/vexa-bots/teams-prejoin.png", fullPage: true });
-  log("📸 Screenshot saved to /var/log/vexa-bots/teams-prejoin.png");
+          new_code = '''  // Handle Teams permission dialog
+            try {
+              const continueNoAVBtn = page.locator(\"button:has-text('Continue without audio or video')\").first();
+              const continueNoAVVisible = await continueNoAVBtn.isVisible().catch(() => false);
+              if (continueNoAVVisible) {
+                await continueNoAVBtn.click();
+                log('Clicked Continue without audio or video button');
+                await page.waitForTimeout(2000);
+              }
+            } catch (e) {
+              log('No Continue without audio or video dialog');
+            }
 
-  log("Step 6: Clicking 'Join now' to enter the meeting...");'''
+            await page.screenshot({ path: '/var/log/vexa-bots/teams-prejoin.png', fullPage: true });
+            log('Screenshot saved to /var/log/vexa-bots/teams-prejoin.png');
 
-          content = content.replace(old, new)
+            ''' + old
 
-          with open("services/vexa-bot/core/src/platforms/msteams/join.ts", "w") as f:
+          content = content.replace(old, new_code)
+
+          with open('services/vexa-bot/core/src/platforms/msteams/join.ts', 'w') as f:
               f.write(content)
 
-          print("OK: join.ts patched successfully")
-          PYEOF
-          python3 /tmp/join-patch.py
+          print('OK: join.ts patched successfully')
+          "
           echo "==== VERIFYING join.ts injection ===="
           grep -n "Continue without audio" services/vexa-bot/core/src/platforms/msteams/join.ts || echo "WARNING: handler not found"
           grep -n "screenshot" services/vexa-bot/core/src/platforms/msteams/join.ts || echo "WARNING: screenshot not found"
@@ -88,8 +85,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # build context is the vexa core repo
-          file: docker/lite/Dockerfile.lite # point to the lite Dockerfile
+          context: .
+          file: docker/lite/Dockerfile.lite
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
