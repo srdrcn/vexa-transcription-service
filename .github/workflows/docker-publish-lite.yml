@@ -32,7 +32,7 @@ jobs:
 
       - name: Inject Proxy to Browser Args
         run: |
-          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=https=http:\/\/10.81.105.12:8080",/' services/vexa-bot/core/src/constans.ts
+          sed -i 's/const baseBrowserArgs = \[/const baseBrowserArgs = \[\n  "--proxy-server=https=http:\/\/10.81.105.12:8080",\n  "--proxy-bypass-list=localhost;127.0.0.1;10.0.0.0\/8;172.16.0.0\/12;192.168.0.0\/16",/' services/vexa-bot/core/src/constans.ts
           echo "==== PRINTING constans.ts PROXY INJECTION RESULT ===="
           head -n 20 services/vexa-bot/core/src/constans.ts
 
