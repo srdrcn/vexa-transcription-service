@@ -20,7 +20,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 COPY main.py .
 
 # Create models directory and pre-download the default model
-ARG MODEL_SIZE="large-v3-turbo"
+ARG MODEL_SIZE="large-v3"
 ENV HF_HUB_CACHE="/app/models"
 ENV HF_HOME="/app/models"
 RUN mkdir -p /app/models && \
